@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Workflow - Flow Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Public Sans', sans-serif;
+            background: linear-gradient(135deg, #f5f7fb 0%, #f8f8fa 100%);
+            padding: 40px 20px;
+            color: #1c2230;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1c2230;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #475066;
+            max-width: 900px;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .filter-group.brielle {
+            background: #dce5fe;
+            color: #062883;
+        }
+
+        .filter-group.chase {
+            background: #ece5ff;
+            color: #1e006f;
+        }
+
+        .filter-group.scott {
+            background: #feeac3;
+            color: #8f6003;
+        }
+
+        .filter-group.system {
+            background: #fde2d7;
+            color: #7e2701;
+        }
+
+        .filter-group:hover {
+            border-color: currentColor;
+        }
+
+        .filter-group.unchecked {
+            opacity: 0.5;
+        }
+
+        .filter-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: currentColor;
+            flex-shrink: 0;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .stage-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stage-badge {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #e0e6f2;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #475066;
+        }
+
+        .stage-badge.active {
+            background: #062883;
+            border-color: #062883;
+            color: white;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 32px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 24px;
+            min-width: 1200px;
+            position: relative;
+        }
+
+        .flow-connector {
+            position: absolute;
+            background: linear-gradient(to right, #e0e6f2 0%, #e0e6f2 calc(100% - 20px), transparent calc(100% - 20px));
+            height: 2px;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            z-index: 0;
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stage-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #828ba1;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0e6f2;
+        }
+
+        .node {
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1.5px solid;
+            transition: all 0.2s ease;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .node:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Actor colors */
+        .node.brielle {
+            background: white;
+            border-color: #b9cffd;
+            color: #1c2230;
+        }
+
+        .node.chase {
+            background: white;
+            border-color: #cab6ff;
+            color: #1c2230;
+        }
+
+        .node.scott {
+            background: white;
+            border-color: #fdcc6e;
+            color: #1c2230;
+        }
+
+        .node.system {
+            background: #f8f8fa;
+            border-color: #828ba1;
+            border-style: dashed;
+            color: #1c2230;
+        }
+
+        /* Node types */
+        .node.decision {
+            background: #ece5ff;
+            border-color: #632aff;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .node.start-end {
+            background: #dce5fe;
+            border-color: #016cf7;
+            border-radius: 24px;
+            font-weight: 500;
+        }
+
+        .node.success {
+            background: #d9faea;
+            border-color: #1fd580;
+            border-radius: 24px;
+        }
+
+        .node.error {
+            background: #fbdfdf;
+            border-color: #e5474a;
+            border-radius: 24px;
+        }
+
+        .node-title {
+            font-weight: 600;
+            color: #1c2230;
+            margin-bottom: 6px;
+        }
+
+        .node-actor {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .node.brielle .node-actor {
+            color: #062883;
+        }
+
+        .node.chase .node-actor {
+            color: #1e006f;
+        }
+
+        .node.scott .node-actor {
+            color: #8f6003;
+        }
+
+        .node.system .node-actor {
+            color: #475066;
+        }
+
+        .trust-gate {
+            display: inline-block;
+            background: #fde2d7;
+            border: 1px solid #f74d02;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #7e2701;
+            margin-top: 8px;
+        }
+
+        .decision-paths {
+            font-size: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e0e6f2;
+            color: #475066;
+        }
+
+        .path-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 4px 0;
+        }
+
+        .path-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .path-approve {
+            background: #1ba364;
+        }
+
+        .path-decline {
+            background: #d32023;
+        }
+
+        .path-escalate {
+            background: #f74d02;
+        }
+
+        .path-revise {
+            background: #016cf7;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f8fa;
+            border-radius: 8px;
+            margin-top: 24px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .legend-icon {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1.5px solid #828ba1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .legend-icon.decision {
+            background: #ece5ff;
+            border-color: #632aff;
+            transform: rotate(45deg);
+            width: 20px;
+            height: 20px;
+        }
+
+        .legend-icon.system {
+            border-style: dashed;
+            background: #f8f8fa;
+        }
+
+        .legend-icon.success {
+            background: #d9faea;
+            border-color: #1fd580;
+            border-radius: 24px;
+        }
+
+        .legend-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .legend-label {
+            font-weight: 600;
+            color: #1c2230;
+        }
+
+        .legend-description {
+            font-size: 12px;
+            color: #475066;
+        }
+
+        .hidden-node {
+            display: none;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            color: #828ba1;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .open-question {
+            background: #f0f5ff;
+            border: 1px solid #0056b3;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #0056b3;
+        }
+
+        .open-question::before {
+            content: "❓ Open Question: ";
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .flow-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .legend {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Approval Workflow: Flow Diagram</h1>
+            <p>The exact branching logic across all actors — every decision point, system action, and feedback loop. Follow the color-coded paths to understand what happens at each stage.</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label style="font-weight: 600; font-size: 13px; color: #475066;">Filter by Actor:</label>
+                <label class="filter-group brielle">
+                    <input type="checkbox" class="filter-checkbox" data-actor="brielle" checked>
+                    <span class="filter-label">Brielle</span>
+                </label>
+                <label class="filter-group chase">
+                    <input type="checkbox" class="filter-checkbox" data-actor="chase" checked>
+                    <span class="filter-label">Chase</span>
+                </label>
+                <label class="filter-group scott">
+                    <input type="checkbox" class="filter-checkbox" data-actor="scott" checked>
+                    <span class="filter-label">Scott</span>
+                </label>
+                <label class="filter-group system">
+                    <input type="checkbox" class="filter-checkbox" data-actor="system" checked>
+                    <span class="filter-label">System</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <div class="flow-connector"></div>
+            <div class="flow-grid">
+                <!-- STAGE 1: Draft & Submit -->
+                <div class="stage">
+                    <div class="stage-title">1. Draft & Submit</div>
+                    <div class="node brielle start-end" data-actor="brielle">
+                        <div class="node-title">Brielle drafts a decision</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                    <div class="node brielle" data-actor="brielle">
+                        <div class="node-title">Clicks Submit</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2: System Routing -->
+                <div class="stage">
+                    <div class="stage-title">2. System Routing</div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">Creates decision record</div>
+                        <div class="node-title" style="font-size: 12px; font-weight: normal; margin-top: 6px;">Notifies Chase immediately</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: Waiting & Review -->
+                <div class="stage">
+                    <div class="stage-title">3. Waiting & Review</div>
+                    <div class="node brielle" data-actor="brielle">
+                        <div class="node-title">Card: "Waiting for approval"</div>
+                        <div style="font-size: 12px; margin-top: 6px; color: #475066;">Escalate link available. Auto-escalates after 24h</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">Monitors 24h timer</div>
+                        <div style="font-size: 12px; margin-top: 6px; color: #475066;">Auto-escalates if no response</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node chase" data-actor="chase">
+                        <div class="node-title">Chase Reviews</div>
+                        <div style="font-size: 12px; margin-top: 6px; color: #475066;">Opens Launchpad to see full details. Explain available for reasoning.</div>
+                        <div class="node-actor">👤 Chase · The Approver</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 4: Decision -->
+                <div class="stage">
+                    <div class="stage-title">4. Decision</div>
+                    <div class="node decision" data-actor="chase">
+                        <div class="node-title">Chase Decides</div>
+                        <div class="decision-paths">
+                            <div class="path-item">
+                                <span class="path-indicator path-approve"></span>✓ Approve
+                            </div>
+                            <div class="path-item">
+                                <span class="path-indicator path-decline"></span>✗ Decline
+                            </div>
+                            <div class="path-item">
+                                <span class="path-indicator path-revise"></span>↻ Request Change
+                            </div>
+                            <div class="path-item">
+                                <span class="path-indicator path-escalate"></span>↗ Escalate
+                            </div>
+                        </div>
+                        <div class="node-actor">👤 Chase · The Approver</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 5: Branch Outcomes -->
+                <div class="stage">
+                    <div class="stage-title">5. Outcomes</div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">✓ Approve Path</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Updates status → Approved. Notifies Brielle.</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">✗ Decline Path</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Archives campaign. Notifies Brielle.</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">↻ Change Request Path</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Notifies Brielle with change notes.</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">↗ Escalation Path</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Routes to Scott. Chase card → "Awaiting authorization"</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 6: Resolution / Revise -->
+                <div class="stage">
+                    <div class="stage-title">6. Resolution</div>
+                    <div class="node success" data-actor="brielle">
+                        <div class="node-title">✅ Launched</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Revert window opens (24h)</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                    <div class="node error" data-actor="brielle">
+                        <div class="node-title">⛔ Declined</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Campaign archived</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                    <div class="node brielle" data-actor="brielle">
+                        <div class="node-title">Revise & Resubmit</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Edits changes → resubmits</div>
+                        <div class="node-actor">Requester</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">🔒 Auto-Update (Revise)</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Reads change comments, updates, resubmits</div>
+                        <div class="trust-gate">Trust-Gated</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">🔒 Auto-Launch</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Launches approved decision automatically</div>
+                        <div class="trust-gate">Trust-Gated</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                </div>
+
+                <!-- STAGE 7: Escalation (Scott) -->
+                <div class="stage">
+                    <div class="stage-title">7. Escalation</div>
+                    <div class="node scott" data-actor="scott">
+                        <div class="node-title">Reviews context + budget figure</div>
+                        <div class="node-actor">Senior Approver</div>
+                    </div>
+                    <div class="node decision" data-actor="scott">
+                        <div class="node-title">Decide?</div>
+                        <div class="decision-paths">
+                            <div class="path-item">
+                                <span class="path-indicator path-approve"></span>Approve
+                            </div>
+                            <div class="path-item">
+                                <span class="path-indicator path-decline"></span>Decline
+                            </div>
+                        </div>
+                        <div class="node-actor">Senior Approver</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">✓ Scott Approves</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Notifies Chase + Brielle</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                    <div class="node system" data-actor="system">
+                        <div class="node-title">✗ Scott Declines</div>
+                        <div style="font-size: 12px; margin-top: 6px;">Notifies Chase + Brielle. Archives.</div>
+                        <div class="node-actor">Automation</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scroll-hint">← Scroll horizontally to see all stages →</div>
+        </div>
+
+        <div class="open-question">
+            When Scott approves, is Brielle notified simultaneously with Chase, or only after? Current design intent unclear.
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-icon" style="background: white; border-color: #b9cffd;"></div>
+                <div class="legend-text">
+                    <div class="legend-label">👤 Brielle · Requester</div>
+                    <div class="legend-description">Submits decisions, edits, and launches</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: white; border-color: #cab6ff;"></div>
+                <div class="legend-text">
+                    <div class="legend-label">👤 Chase · The Approver</div>
+                    <div class="legend-description">Reviews & makes primary approval decisions</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: white; border-color: #fdcc6e;"></div>
+                <div class="legend-text">
+                    <div class="legend-label">👤 Scott · Senior Approver</div>
+                    <div class="legend-description">Approves high-budget escalations only</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon system"></div>
+                <div class="legend-text">
+                    <div class="legend-label">System Actions</div>
+                    <div class="legend-description">Automated workflows & routing</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon decision"></div>
+                <div class="legend-text">
+                    <div class="legend-label">Decision Point</div>
+                    <div class="legend-description">Multiple possible outcomes</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon success"></div>
+                <div class="legend-text">
+                    <div class="legend-label">Success State</div>
+                    <div class="legend-description">Approved & launched</div>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon error"></div>
+                <div class="legend-text">
+                    <div class="legend-label">Error/End State</div>
+                    <div class="legend-description">Declined or archived</div>
+                </div>
+            </div>
+            <div class="legend-item" style="grid-column: 1; border: 1px solid #f74d02; border-radius: 6px; padding: 10px; background: #fde2d7;">
+                <div style="text-align: center; width: 100%;">
+                    <div style="font-weight: 600; color: #7e2701; font-size: 11px;">🔒 TRUST-GATED</div>
+                    <div style="font-size: 11px; color: #7e2701;">Requires learned trust</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll('.filter-checkbox');
+        let activeActors = new Set(['brielle', 'chase', 'scott', 'system']);
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const actor = checkbox.dataset.actor;
+                const filterGroup = checkbox.closest('.filter-group');
+
+                if (checkbox.checked) {
+                    activeActors.add(actor);
+                    filterGroup.classList.remove('unchecked');
+                } else {
+                    activeActors.delete(actor);
+                    filterGroup.classList.add('unchecked');
+                }
+                updateFilter();
+            });
+        });
+
+        function updateFilter() {
+            const allNodes = document.querySelectorAll('[data-actor]');
+            allNodes.forEach(node => {
+                const actor = node.dataset.actor;
+                if (activeActors.has(actor)) {
+                    node.classList.remove('hidden-node');
+                } else {
+                    node.classList.add('hidden-node');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

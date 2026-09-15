@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Workflow - User Journey Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Public Sans', sans-serif;
+            background: linear-gradient(135deg, #f5f7fb 0%, #f8f8fa 100%);
+            padding: 40px 20px;
+            color: #1c2230;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1c2230;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #475066;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e6f2;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            color: #475066;
+        }
+
+        .filter-btn:hover {
+            border-color: #062883;
+            color: #062883;
+        }
+
+        .filter-btn.active {
+            background: #062883;
+            color: white;
+            border-color: #062883;
+        }
+
+        .role-filter {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .filter-group.brielle {
+            background: #dce5fe;
+            color: #062883;
+        }
+
+        .filter-group.chase {
+            background: #ece5ff;
+            color: #1e006f;
+        }
+
+        .filter-group.scott {
+            background: #feeac3;
+            color: #8f6003;
+        }
+
+        .filter-group.system {
+            background: #fde2d7;
+            color: #7e2701;
+        }
+
+        .filter-group:hover {
+            border-color: currentColor;
+        }
+
+        .filter-group.unchecked {
+            opacity: 0.5;
+        }
+
+        .filter-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: currentColor;
+            flex-shrink: 0;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .journey-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .journey-table {
+            display: grid;
+            grid-template-columns: 180px repeat(8, 300px);
+            gap: 16px;
+            min-width: 100%;
+        }
+
+        .stage-header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e0e6f2;
+        }
+
+        .stage-number {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.7px;
+            color: #828ba1;
+            text-transform: uppercase;
+        }
+
+        .stage-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c2230;
+        }
+
+        .stage-note {
+            font-size: 11px;
+            color: #828ba1;
+        }
+
+        .role-label {
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .role-label.brielle {
+            background: #dce5fe;
+            color: #062883;
+        }
+
+        .role-label.chase {
+            background: #ece5ff;
+            color: #1e006f;
+        }
+
+        .role-label.scott {
+            background: #feeac3;
+            color: #8f6003;
+        }
+
+        .role-label.system {
+            background: #fde2d7;
+            color: #7e2701;
+        }
+
+        .role-name {
+            font-size: 18px;
+        }
+
+        .role-title {
+            font-size: 10.5px;
+            font-weight: 500;
+            letter-spacing: 0.7px;
+            opacity: 0.8;
+        }
+
+        .journey-cell {
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 80px;
+            justify-content: flex-start;
+        }
+
+        .journey-cell.inactive {
+            background: #f8f8fa;
+            border: 1px dashed #e6e9ef;
+            color: #abb3c4;
+            font-style: italic;
+        }
+
+        .journey-cell.brielle {
+            background: white;
+            border: 1px solid #b9cffd;
+        }
+
+        .journey-cell.chase {
+            background: white;
+            border: 1px solid #cab6ff;
+        }
+
+        .journey-cell.scott {
+            background: white;
+            border: 1px solid #fdcc6e;
+        }
+
+        .journey-cell.system {
+            background: white;
+            border: 1px solid #ffa680;
+        }
+
+        .cell-action {
+            font-weight: 500;
+            color: #1c2230;
+        }
+
+        .cell-emotion {
+            font-style: italic;
+            color: #475066;
+            font-size: 12.5px;
+            border-top: 1px solid #e0e6f2;
+            padding-top: 8px;
+        }
+
+        .cell-emotion::before {
+            content: "💭 ";
+        }
+
+        .pain-point {
+            background: #fff5f0;
+            color: #a63301;
+            font-size: 11.5px;
+            padding: 8px;
+            border-left: 3px solid #a63301;
+            margin-top: 4px;
+        }
+
+        .pain-point::before {
+            content: "⚠️ ";
+            margin-right: 4px;
+        }
+
+        .open-question {
+            background: #f0f5ff;
+            color: #0056b3;
+            font-size: 11.5px;
+            padding: 8px;
+            border-left: 3px solid #0056b3;
+            margin-top: 4px;
+        }
+
+        .open-question::before {
+            content: "❓ ";
+            margin-right: 4px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 16px;
+            background: #f8f8fa;
+            border-radius: 8px;
+            margin-top: 24px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-icon {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            color: #828ba1;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .hidden-row {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Approval Workflow: User Journey Map</h1>
+            <p>The story of one decision moving through the approval chain — what each role does, thinks, and feels at every stage. For the exact branching logic, see the Flow Diagram page.</p>
+        </div>
+
+        <div class="controls">
+            <div class="role-filter" id="roleFilter">
+                <label class="filter-group brielle">
+                    <input type="checkbox" class="filter-checkbox" data-role="brielle" checked>
+                    <span class="filter-label">👤 Brielle (Requester)</span>
+                </label>
+                <label class="filter-group chase">
+                    <input type="checkbox" class="filter-checkbox" data-role="chase" checked>
+                    <span class="filter-label">👤 Chase (Approver)</span>
+                </label>
+                <label class="filter-group scott">
+                    <input type="checkbox" class="filter-checkbox" data-role="scott" checked>
+                    <span class="filter-label">👤 Scott (Senior Approver)</span>
+                </label>
+                <label class="filter-group system">
+                    <input type="checkbox" class="filter-checkbox" data-role="system" checked>
+                    <span class="filter-label">⚙️ System</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="journey-container">
+            <div class="journey-table">
+                <!-- Headers -->
+                <div style="grid-column: 1; padding-top: 0;"></div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 1</div>
+                    <div class="stage-title">Campaign is Ready</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 2</div>
+                    <div class="stage-title">Submit</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 3</div>
+                    <div class="stage-title">Review</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 4</div>
+                    <div class="stage-title">Decision</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 5</div>
+                    <div class="stage-title">Escalation</div>
+                    <div class="stage-note">Only for large-budget decisions</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 6</div>
+                    <div class="stage-title">Respond to Changes</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 7</div>
+                    <div class="stage-title">Launch</div>
+                </div>
+                <div class="stage-header">
+                    <div class="stage-number">Stage 8</div>
+                    <div class="stage-title">Post-Launch</div>
+                </div>
+
+                <!-- Brielle Row -->
+                <div class="role-label brielle" data-role="brielle">
+                    <div class="role-name">Brielle</div>
+                    <div class="role-title">Requester</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Gets a prepared campaign ready in queue from the system, or creates one herself.</div>
+                    <div class="cell-emotion">Confident.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Reviews the card and clicks Submit.</div>
+                    <div class="cell-emotion">Relieved — Chase gets notified and can see it immediately. No manual tracking or email needed.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Waits for review to complete.</div>
+                    <div class="cell-emotion">Only mildly anxious — I have a countdown timer, not silence.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Sees the outcome the moment Chase decides.</div>
+                    <div class="cell-emotion">Never left guessing.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">If Chase doesn't respond within 24 hours, she can manually escalate or it happens automatically.</div>
+                    <div class="cell-emotion">Mildly anxious but able to take action.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">If changes requested: edits and resubmits. If declined: watches it move to Archived. Once trusted, the system handles resubmission automatically.</div>
+                    <div class="cell-emotion">In control — I can act the same day.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Approval is received. She now has permission to launch.</div>
+                    <div class="cell-emotion">Excited.</div>
+                </div>
+                <div class="journey-cell brielle" data-role="brielle">
+                    <div class="cell-action">Sees "Launched" with a 24-hour revert countdown. Later views performance metrics.</div>
+                    <div class="cell-emotion">Confident the loop closed without delay.</div>
+                </div>
+
+                <!-- Chase Row -->
+                <div class="role-label chase" data-role="chase">
+                    <div class="role-name">Chase</div>
+                    <div class="role-title">Approver</div>
+                </div>
+                <div class="journey-cell inactive" data-role="chase">
+                    Not yet involved
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">Receives the campaign card in the review queue immediately when Brielle submits.</div>
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">Opens the campaign on Launchpad to review details, then makes a decision: Approve, Decline, or Request Changes.</div>
+                    <div class="cell-emotion">In control — all the context I need is right here.</div>
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">Approves (notification sent), declines (reason required), requests changes (reason required), or escalates if over his authority.</div>
+                    <div class="cell-emotion">Fast when it's clear-cut; careful near the limit.</div>
+                    <div class="pain-point">No visible threshold for exactly when to escalate.</div>
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">If he doesn't respond within 24 hours, automatic escalation is triggered to Scott.</div>
+                    <div class="cell-emotion">Aware of the deadline.</div>
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">If changes requested: sees the note and change details with a link. If declined: campaign moves to Archived immediately.</div>
+                    <div class="cell-emotion">I don't have to hunt for what changed.</div>
+                </div>
+                <div class="journey-cell inactive" data-role="chase">
+                    Not involved
+                </div>
+                <div class="journey-cell chase" data-role="chase">
+                    <div class="cell-action">Can see who launched it and monitor performance metrics.</div>
+                    <div class="cell-emotion">I trust the safety net is there.</div>
+                </div>
+
+                <!-- Scott Row -->
+                <div class="role-label scott" data-role="scott">
+                    <div class="role-name">Scott</div>
+                    <div class="role-title">Senior Approver · Rare</div>
+                </div>
+                <div class="journey-cell inactive" data-role="scott">
+                    Not involved — rare path
+                </div>
+                <div class="journey-cell inactive" data-role="scott">
+                    Not involved — rare path
+                </div>
+                <div class="journey-cell inactive" data-role="scott">
+                    Not involved — rare path
+                </div>
+                <div class="journey-cell inactive" data-role="scott">
+                    Not involved — rare path
+                </div>
+                <div class="journey-cell scott" data-role="scott">
+                    <div class="cell-action">Reviews the same context Chase saw, plus the budget amount that triggered escalation. Approves or declines.</div>
+                    <div class="cell-emotion">I want this fast — I shouldn't bottleneck a decision that's already 95% vetted.</div>
+                </div>
+                <div class="journey-cell scott" data-role="scott">
+                    <div class="cell-action">His decision is sent to Chase and, per design, directly to Brielle.</div>
+                    <div class="open-question">Timing: Does Brielle get notified simultaneously with Chase, or after?</div>
+                </div>
+                <div class="journey-cell inactive" data-role="scott">
+                    Not involved
+                </div>
+                <div class="journey-cell scott" data-role="scott">
+                    <div class="cell-action">Can see who launched it and monitor performance metrics.</div>
+                    <div class="cell-emotion">I trust the safety net is there.</div>
+                </div>
+
+                <!-- System Row -->
+                <div class="role-label system" data-role="system">
+                    <div class="role-name">System</div>
+                    <div class="role-title">Automation</div>
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Often originates the action Brielle is now submitting.</div>
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Once confidence is built, automatically submits on Brielle's behalf.</div>
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Monitors the 24-hour response timer. If Chase doesn't act, automatically triggers escalation — no manual Escalate button needed.</div>
+                </div>
+                <div class="journey-cell inactive" data-role="system">
+                    Reasoning available via Explain tool
+                </div>
+                <div class="journey-cell inactive" data-role="system">
+                    Not involved
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Reads Chase's change requests, updates the campaign, and resubmits on Brielle's behalf (once trusted).</div>
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Auto-launches an approved campaign on Brielle's behalf (once trusted). Can also update and resubmit per Chase's feedback.</div>
+                </div>
+                <div class="journey-cell system" data-role="system">
+                    <div class="cell-action">Card displays "Auto-launched" — otherwise identical to a human-initiated launch.</div>
+                </div>
+            </div>
+            <div class="scroll-hint">← Scroll horizontally to see all stages →</div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-icon" style="background: #fff5f0; border: 2px solid #a63301;"></span>
+                <span><strong>Pain Point</strong> — Issue to address in design</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon" style="background: #f0f5ff; border: 2px solid #0056b3;"></span>
+                <span><strong>Open Question</strong> — Design decision pending clarification</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon" style="background: #f8f8fa;"></span>
+                <span><strong>Inactive</strong> — Role not involved in this stage</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll('.filter-checkbox');
+        let activeRoles = new Set(['brielle', 'chase', 'scott', 'system']);
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const role = checkbox.dataset.role;
+                const filterGroup = checkbox.closest('.filter-group');
+
+                if (checkbox.checked) {
+                    activeRoles.add(role);
+                    filterGroup.classList.remove('unchecked');
+                } else {
+                    activeRoles.delete(role);
+                    filterGroup.classList.add('unchecked');
+                }
+                updateFilter();
+            });
+        });
+
+        function updateFilter() {
+            const allRows = document.querySelectorAll('[data-role]');
+            allRows.forEach(row => {
+                const role = row.dataset.role;
+                if (activeRoles.has(role)) {
+                    row.classList.remove('hidden-row');
+                } else {
+                    row.classList.add('hidden-row');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
